@@ -21,12 +21,15 @@ df['Viaje_Id'] = df['Viaje_Id'].astype(pd.UInt32Dtype())
 df['Inicio_del_viaje'] = pd.to_datetime(df['Inicio_del_viaje'])
 df['Fin_del_viaje'] = pd.to_datetime(df['Fin_del_viaje'])
 
-"""## Upload dataset to an AWS S3 bucket"""
+# upload_to_s3(df)
 
-import s3fs
 
-s3 = s3fs.S3FileSystem(key='<access-key>', secret='<secret-key>')
+def upload_to_s3(df):
+    """## Upload dataset to an AWS S3 bucket"""
+    import s3fs
 
-# Use 'w' for py3, 'wb' for py2
-with s3.open('<bucket_name>/<filename>.csv', 'w') as f:
-    df.to_csv(f, index=False)
+    s3 = s3fs.S3FileSystem(key='<access-key>', secret='<secret-key>')
+
+    # Use 'w' for py3, 'wb' for py2
+    with s3.open('<bucket_name>/<filename>.csv', 'w') as f:
+        df.to_csv(f, index=False)
