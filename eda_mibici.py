@@ -11,15 +11,20 @@ Original file is located at
 
 import pandas as pd
 
-df = pd.read_csv('https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/data.csv')
+date_cols = ['Inicio_del_viaje', 'Fin_del_viaje']
 
-df['Anio_de_nacimiento'] = df['Anio_de_nacimiento'].astype(pd.UInt16Dtype())
-df['Origen_Id'] = df['Origen_Id'].astype(pd.UInt16Dtype())
-df['Destino_Id'] = df['Destino_Id'].astype(pd.UInt16Dtype())
-df['Usuario_Id'] = df['Usuario_Id'].astype(pd.UInt32Dtype())
-df['Viaje_Id'] = df['Viaje_Id'].astype(pd.UInt32Dtype())
-df['Inicio_del_viaje'] = pd.to_datetime(df['Inicio_del_viaje'])
-df['Fin_del_viaje'] = pd.to_datetime(df['Fin_del_viaje'])
+df = pd.read_csv(
+    'https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/data.csv',
+    dtype={
+        'Anio_de_nacimiento': pd.UInt16Dtype(),
+        'Origen_Id': pd.UInt16Dtype(),
+        'Destino_Id': pd.UInt16Dtype(),
+        'Usuario_Id': pd.UInt32Dtype(),
+        'Viaje_Id': pd.UInt32Dtype()
+    },
+    parse_dates=date_cols,
+    date_parser=pd.to_datetime
+)
 
 # upload_to_s3(df)
 
