@@ -26,8 +26,14 @@ df = pd.read_csv(
     date_parser=pd.to_datetime
 )
 
-# upload_to_s3(df)
+estaciones_df = pd.read_csv('https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/estaciones.csv')
+df = df.merge(estaciones_df, left_on='Origen_Id', right_on='id', how= 'left')
+df = df.merge(estaciones_df, left_on='Destino_Id', right_on='id', how= 'left')
+df.drop(['id_x', 'id_y'], inplace = True, axis=1)
+df.rename(columns={"latitud_x": "latitud_origen", "longitud_x": "longitud_origen"}, inplace = True)
+df.rename(columns={"latitud_y": "latitud_destino", "longitud_y": "longitud_destino"}, inplace = True)
 
+# upload_to_s3(df)
 
 def upload_to_s3(df):
     """## Upload dataset to an AWS S3 bucket"""
