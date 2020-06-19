@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 date_cols = ['Inicio_del_viaje', 'Fin_del_viaje']
 
@@ -28,6 +29,9 @@ df['diff_seconds']= df['diff_seconds']/np.timedelta64(1,'s')
 #Borramos todo lo que este menos de 15 Segundos en la columna diff_seconds
 df.drop(df[df.diff_seconds < 15].index, inplace = True)
 
+# Filtramos los registros para sólo mujeres
+df = df[df["Genero"].isin(["F"])]
+
 estaciones_df = pd.read_csv('https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/estaciones.csv')
 df = df.merge(estaciones_df, left_on='Origen_Id', right_on='id', how= 'left')
 df = df.merge(estaciones_df, left_on='Destino_Id', right_on='id', how= 'left')
@@ -39,10 +43,12 @@ df_criminal = pd.read_csv('https://trello-attachments.s3.amazonaws.com/5e7ab7849
 
 municipalities = ["GUADALAJARA", "ZAPOPAN", "SAN PEDRO TLAQUEPAQUE"]
 null_values = ["N.D.", "N..D."]
+crimes = ["LESIONES DOLOSAS", "ROBO DE MOTOCICLETA", "ROBO A CUENTAHABIENTES", "HOMICIDIO DOLOSO", "ROBO A NEGOCIO", "FEMINICIDIO"]
 
 df_criminal = df_criminal[df_criminal["Municipio"].isin(municipalities)]
 df_criminal = df_criminal[~df_criminal["Colonia"].isin(null_values)]
-
-crimes = ["LESIONES DOLOSAS", "ROBO DE MOTOCICLETA", "ROBO A CUENTAHABIENTES", "HOMICIDIO DOLOSO", "ROBO A NEGOCIO", "FEMINICIDIO"]
-
 df_criminal = df_criminal[df_criminal["Delito"].isin(crimes)]
+
+lat_lng = pd.read_csv("https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/neighborhoods_latlng.csv")
+df_criminal = df_criminal.merge(lat_lng, left_on='Colonia', right_on="colonia", how="left")
+df_criminal.drop(['Mes', 'Clave_Mun', 'colonia', 'query', 'status'], axis = 1, inplace=True)
