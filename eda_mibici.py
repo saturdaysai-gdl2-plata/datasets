@@ -26,6 +26,12 @@ df = pd.read_csv(
     date_parser=pd.to_datetime
 )
 
+# Eliminar lineas duplicadas ----------
+df.drop_duplicates(subset=None, keep='first', inplace=True)
+
+# Eliminar lineas completamente vacías --------
+df.dropna(axis=0, how='all', thresh=None, subset=None, inplace=True)
+
 #Sacamos la diferencia en segundos y se agrega a una columna llamada diff_seconds
 df['diff_seconds'] = df['Fin_del_viaje'] - df['Inicio_del_viaje']
 df['diff_seconds']= df['diff_seconds']/np.timedelta64(1,'s')
