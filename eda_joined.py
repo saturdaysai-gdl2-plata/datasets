@@ -42,3 +42,7 @@ null_values = ["N.D.", "N..D."]
 
 df_criminal = df_criminal[df_criminal["Municipio"].isin(municipalities)]
 df_criminal = df_criminal[~df_criminal["Colonia"].isin(null_values)]
+
+crimes = ["LESIONES DOLOSAS", "ROBO DE MOTOCICLETA", "ROBO A CUENTAHABIENTES", "HOMICIDIO DOLOSO", "ROBO A NEGOCIO", "FEMINICIDIO"]
+
+df_criminal = df_criminal[df_criminal["Delito"].isin(crimes)]
