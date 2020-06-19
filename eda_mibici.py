@@ -26,6 +26,13 @@ df = pd.read_csv(
     date_parser=pd.to_datetime
 )
 
+#Sacamos la diferencia en segundos y se agrega a una columna llamada diff_seconds
+df['diff_seconds'] = df['Fin_del_viaje'] - df['Inicio_del_viaje']
+df['diff_seconds']= df['diff_seconds']/np.timedelta64(1,'s')
+
+#Borramos todo lo que este menos de 15 Segundos en la columna diff_seconds
+df.drop(df[df.diff_seconds < 15].index, inplace = True)
+
 estaciones_df = pd.read_csv('https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/estaciones.csv')
 df = df.merge(estaciones_df, left_on='Origen_Id', right_on='id', how= 'left')
 df = df.merge(estaciones_df, left_on='Destino_Id', right_on='id', how= 'left')
