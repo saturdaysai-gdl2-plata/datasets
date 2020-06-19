@@ -26,6 +26,12 @@ df = pd.read_csv(
     date_parser=pd.to_datetime
 )
 
+# Eliminar lineas duplicadas ----------
+df.drop_duplicates(subset=None, keep='first', inplace=True)
+
+# Eliminar lineas completamente vacías --------
+df.dropna(axis=0, how='all', thresh=None, subset=None, inplace=True)
+
 #Sacamos la diferencia en segundos y se agrega a una columna llamada diff_seconds
 df['diff_seconds'] = df['Fin_del_viaje'] - df['Inicio_del_viaje']
 df['diff_seconds']= df['diff_seconds']/np.timedelta64(1,'s')
@@ -51,14 +57,3 @@ def upload_to_s3(df):
     # Use 'w' for py3, 'wb' for py2
     with s3.open('<bucket_name>/<filename>.csv', 'w') as f:
         df.to_csv(f, index=False)
-        
-  #Eliminar lineas duplicadas ----------
-print(df.shape)
-df.head(10)
-df.tail()
-df_unique= df.drop_duplicates(subset=None, keep='first', inplace=False)
-print(df_unique.shape)
-
-#Eliminar lineas completamente vacías --------
-df_noempty = df_unique.dropna(axis=0, how='all', thresh=None, subset=None, inplace=False)
-print(df_noempty.shape)
