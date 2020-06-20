@@ -55,5 +55,3 @@ df_criminal = df_criminal[df_criminal["Delito"].isin(crimes)]
 lat_lng = pd.read_csv("https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/neighborhoods_latlng.csv")
 df_criminal = df_criminal.merge(lat_lng, left_on='Colonia', right_on="colonia", how="left")
 df_criminal.drop(['Mes', 'Clave_Mun', 'colonia', 'query', 'status'], axis = 1, inplace=True)
-
-df['mes'] = df['Inicio_del_viaje'].dt.month
