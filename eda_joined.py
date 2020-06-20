@@ -38,6 +38,9 @@ df = df.merge(estaciones_df, left_on='Destino_Id', right_on='id', how= 'left')
 df.drop(['id_x', 'id_y'], inplace = True, axis=1)
 df.rename(columns={"latitud_x": "latitud_origen", "longitud_x": "longitud_origen"}, inplace = True)
 df.rename(columns={"latitud_y": "latitud_destino", "longitud_y": "longitud_destino"}, inplace = True)
+df['mes'] = df['Inicio_del_viaje'].dt.month
+
+# ======== Criminal Incidence ========
 
 df_criminal = pd.read_csv('https://trello-attachments.s3.amazonaws.com/5e7ab7849f172231e1d8b386/5e7d5e0fec43d718240c71c7/cbf8668259455adfbabd3f686e410b41/incidencia_delictiva_jalisco18-19_filter.csv')
 
