@@ -55,3 +55,43 @@ df_criminal = df_criminal[df_criminal["Delito"].isin(crimes)]
 lat_lng = pd.read_csv("https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/neighborhoods_latlng.csv")
 df_criminal = df_criminal.merge(lat_lng, left_on='Colonia', right_on="colonia", how="left")
 df_criminal.drop(['Mes', 'Clave_Mun', 'colonia', 'query', 'status'], axis = 1, inplace=True)
+
+
+def distFrom(lat1, lng1, lat2, lng2):
+    #Radio de la Tierra en km
+    R = 6373.0
+
+    lat1 = np.radians(lat1)
+    lon1 = np.radians(lng1)
+    lat2 = np.radians(lat2)
+    lon2 = np.radians(lng2)
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = (np.sin(dlat/2))**2 + np.cos(lat1) * np.cos(lat2) * (np.sin(dlon/2))**2
+    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
+    return R * c
+
+
+neighborhood_location_lat_lng = df_criminal.iloc[:, [4, 7, 8]]
+neighborhood_location_lat_lng.drop_duplicates(subset=['Colonia'], keep=False, inplace=True)
+neighborhood_location_lat_lng['Nearest_station'] = ""
+neighborhood_location_lat_lng['Distance_to_nearest_station'] = ""
+
+nearest_stations = []
+min_distances = []
+
+for _, row in neighborhood_location_lat_lng.iterrows():
+    distances = []
+    for _, station in estaciones_df.iterrows():
+        dist = distFrom(float(row['location_lat']), float(row['location_lng']), float(station['latitud']), float(station['longitud']))
+        distances.append({'station': station['id'], 'distance': dist})
+
+    distances_df = pd.DataFrame(distances)
+    distances_df = distances_df[distances_df['distance'] == distances_df['distance'].min()]
+    nearest_stations.append(int(distances_df['station'].values[0]) if len(distances_df['station'].values) > 0 else 0)
+    min_distances.append(distances_df['distance'].values[0] if len(distances_df['distance'].values) > 0 else 0)
+
+neighborhood_location_lat_lng['Distance_to_nearest_station'] = min_distances
+neighborhood_location_lat_lng['Nearest_station'] = nearest_stations
+
