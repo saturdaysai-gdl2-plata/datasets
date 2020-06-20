@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 date_cols = ['Inicio_del_viaje', 'Fin_del_viaje']
 
@@ -46,3 +47,5 @@ df_criminal = df_criminal[~df_criminal["Colonia"].isin(null_values)]
 crimes = ["LESIONES DOLOSAS", "ROBO DE MOTOCICLETA", "ROBO A CUENTAHABIENTES", "HOMICIDIO DOLOSO", "ROBO A NEGOCIO", "FEMINICIDIO"]
 
 df_criminal = df_criminal[df_criminal["Delito"].isin(crimes)]
+
+df['mes'] = df['Inicio_del_viaje'].dt.month
