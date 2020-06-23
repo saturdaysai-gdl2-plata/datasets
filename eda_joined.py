@@ -47,10 +47,12 @@ df_criminal = pd.read_csv('https://trello-attachments.s3.amazonaws.com/5e7ab7849
 municipalities = ["GUADALAJARA", "ZAPOPAN", "SAN PEDRO TLAQUEPAQUE"]
 null_values = ["N.D.", "N..D."]
 crimes = ["LESIONES DOLOSAS", "ROBO DE MOTOCICLETA", "ROBO A CUENTAHABIENTES", "HOMICIDIO DOLOSO", "ROBO A NEGOCIO", "FEMINICIDIO"]
+statuses_to_drop = ["ZERO_RESULTS"]
 
 df_criminal = df_criminal[df_criminal["Municipio"].isin(municipalities)]
 df_criminal = df_criminal[~df_criminal["Colonia"].isin(null_values)]
 df_criminal = df_criminal[df_criminal["Delito"].isin(crimes)]
+df_criminal = df_criminal[~df_criminal["status"].isin(statuses_to_drop)]
 
 lat_lng = pd.read_csv("https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/neighborhoods_latlng.csv")
 df_criminal = df_criminal.merge(lat_lng, left_on='Colonia', right_on="colonia", how="left")
@@ -73,7 +75,7 @@ def distFrom(lat1, lng1, lat2, lng2):
     return R * c
 
 
-neighborhood_location_lat_lng = df_criminal.iloc[:, [4, 7, 8]]
+neighborhood_location_lat_lng = df_criminal.loc[:, ['Colonia', 'location_lat', 'location_lng']]
 neighborhood_location_lat_lng.drop_duplicates(subset=['Colonia'], keep=False, inplace=True)
 neighborhood_location_lat_lng['Nearest_station'] = ""
 neighborhood_location_lat_lng['Distance_to_nearest_station'] = ""
@@ -89,9 +91,14 @@ for _, row in neighborhood_location_lat_lng.iterrows():
 
     distances_df = pd.DataFrame(distances)
     distances_df = distances_df[distances_df['distance'] == distances_df['distance'].min()]
-    nearest_stations.append(int(distances_df['station'].values[0]) if len(distances_df['station'].values) > 0 else 0)
-    min_distances.append(distances_df['distance'].values[0] if len(distances_df['distance'].values) > 0 else 0)
+    nearest_stations.append(int(distances_df['station'].values[0]))
+    min_distances.append(distances_df['distance'].values[0])
 
 neighborhood_location_lat_lng['Distance_to_nearest_station'] = min_distances
 neighborhood_location_lat_lng['Nearest_station'] = nearest_stations
 
+df_criminal = df_criminal.merge(lat_lng, left_on='Colonia', right_on="Colonia", how="left")
+neighborhood_location_lat_lng.drop(['location_lat', 'location_lng'], axis = 1, inplace=True)
+df_criminal = df_criminal.merge(neighborhood_location_lat_lng, left_on='Colonia', right_on="Colonia", how="left")
+
+df_criminal_with_stations_near = df_criminal[df_criminal['Distance_to_nearest_station'] <= 1.5]
