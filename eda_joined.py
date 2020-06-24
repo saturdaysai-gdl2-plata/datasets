@@ -39,6 +39,7 @@ df.drop(['id_x', 'id_y'], inplace = True, axis=1)
 df.rename(columns={"latitud_x": "latitud_origen", "longitud_x": "longitud_origen"}, inplace = True)
 df.rename(columns={"latitud_y": "latitud_destino", "longitud_y": "longitud_destino"}, inplace = True)
 df['mes'] = df['Inicio_del_viaje'].dt.month
+df['anio'] = df['Inicio_del_viaje'].dt.year
 
 # ======== Criminal Incidence ========
 
@@ -56,6 +57,7 @@ lat_lng = pd.read_csv("https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazo
 df_criminal = df_criminal.merge(lat_lng, left_on='Colonia', right_on="colonia", how="left")
 df_criminal.drop(['Mes', 'Clave_Mun', 'colonia', 'query', 'status'], axis = 1, inplace=True)
 
+df_criminal.rename(columns={"Año": "anio", "Número_mes": "mes"}, inplace=True)
 
 def distFrom(lat1, lng1, lat2, lng2):
     #Radio de la Tierra en km
@@ -71,7 +73,6 @@ def distFrom(lat1, lng1, lat2, lng2):
     a = (np.sin(dlat/2))**2 + np.cos(lat1) * np.cos(lat2) * (np.sin(dlon/2))**2
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
     return R * c
-
 
 neighborhood_location_lat_lng = df_criminal.iloc[:, [4, 7, 8]]
 neighborhood_location_lat_lng.drop_duplicates(subset=['Colonia'], keep=False, inplace=True)
@@ -95,3 +96,18 @@ for _, row in neighborhood_location_lat_lng.iterrows():
 neighborhood_location_lat_lng['Distance_to_nearest_station'] = min_distances
 neighborhood_location_lat_lng['Nearest_station'] = nearest_stations
 
+print("Creating prediction model outputs...")
+df_criminal['y_lesionesDolosas'] = 0
+df_criminal['y_roboMotocicleta'] = 0
+df_criminal['y_roboCuentahabientes'] = 0
+df_criminal['y_homicidioDoloso'] = 0
+df_criminal['y_roboNegocio'] = 0
+df_criminal['y_feminicidio'] = 0
+
+df_criminal.loc[df_criminal.Delito == 'LESIONES DOLOSAS', 'y_lesionesDolosas'] = 1
+df_criminal.loc[df_criminal.Delito == 'ROBO DE MOTOCICLETA', 'y_roboMotocicleta'] = 1
+df_criminal.loc[df_criminal.Delito == 'ROBO A CUENTAHABIENTES', 'y_roboCuentahabientes'] = 1
+df_criminal.loc[df_criminal.Delito == 'HOMICIDIO DOLOSO', 'y_homicidioDoloso'] = 1
+df_criminal.loc[df_criminal.Delito == 'ROBO A NEGOCIO', 'y_roboNegocio'] = 1
+df_criminal.loc[df_criminal.Delito == 'FEMINICIDIO', 'y_feminicidio'] = 1
+print("Creating prediction model outputs... Done.")
