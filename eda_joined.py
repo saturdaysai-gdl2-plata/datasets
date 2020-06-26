@@ -9,6 +9,13 @@ Original file is located at
 
 import pandas as pd
 import numpy as np
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import ShuffleSplit
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.model_selection import cross_val_score
+from sklearn.compose import ColumnTransformer
 
 date_cols = ['Inicio_del_viaje', 'Fin_del_viaje']
 
@@ -67,6 +74,71 @@ lat_lng = lat_lng[~lat_lng["status"].isin(statuses_to_drop)]
 df_criminal = df_criminal.merge(lat_lng, left_on='Colonia', right_on="colonia", how="left")
 df_criminal.drop(['Mes', 'Clave_Mun', 'colonia', 'query', 'status'], axis = 1, inplace=True)
 
+print("Deleting invalid coordinates...")
+print("Total of rows: ", len(df_criminal.index))
+indexNames = df_criminal[(df_criminal.location_lat < 20.3257581) | (df_criminal.location_lat > 20.9982375) | (df_criminal.location_lng < -103.6650327) | (df_criminal.location_lng > -103.0809884) ].index
+df_criminal.drop(indexNames , inplace=True)
+print("Total of rows after deletion: ", len(df_criminal.index))
+print("Deleting invalid coordinates... Done.")
+
+def trainModel_scale(model, features, data, nFoldList, nTest, scaler, output):
+    for i in nFoldList:
+        #y = data.ocupacion
+        y = data[output]
+        X = data[features]
+        #categorical_cols = ['diaDeLaSemana']
+
+        #scaler = RobustScaler()
+        #categorical_transformer = Pipeline(steps=[
+        #    ('onehot', OneHotEncoder(handle_unknown='ignore'))
+        #])
+
+        scaler = Pipeline(steps=[
+            ('sca', scaler) 
+        ])
+
+
+        preprocessor = ColumnTransformer(
+            transformers=[
+                #('cat', categorical_transformer, categorical_cols),
+                ('sca', scaler, features)                    
+            ])
+
+        my_pipeline = Pipeline(steps=[('preprocessor', preprocessor),('model', model)])
+
+        cv = ShuffleSplit( test_size = i, n_splits = nTest )
+        #scores = -1 * cross_val_score(my_pipeline, X, y,
+        #                              cv = cv,
+        #                              scoring='neg_mean_absolute_error')
+        scores = cross_val_score(my_pipeline, X, y,
+                              cv = cv,
+                              #scoring='accuracy')
+                              scoring='precision')
+        
+        print("nFold", i)
+        print(scores)
+        #print("MAE scores: %0.5f(+/- %0.4f)" % (scores.mean(), scores.std()))
+
+
+print("Test 1: DecisionTreeClassifier - Minmaxscaler...")
+features = ['anio', 'mes', 'location_lat', 'location_lng']
+output = 'y_lesionesDolosas'
+all_rows = features
+all_rows.append(output)
+#model = linear_model.LinearRegression()
+model = DecisionTreeClassifier()
+nFoldList = [ 0.25, 0.20, 0.10 ]
+nTest = 3
+#data = ocupacionEstaciones_data.copy()
+#data= df_criminal.copy()
+data = df_criminal[all_rows].dropna()
+convert_dict = {'anio': float, 'mes': float, 'y_lesionesDolosas': float}
+data = data.astype(convert_dict) 
+#data = df_criminal.astype(np.float64) 
+print("Total of rows: ", len(data.index))
+scaler = MinMaxScaler()
+trainModel_scale(model, features, data, nFoldList, nTest, scaler, output)
+print("Test 1: DecisionTreeClassifier - Minmaxscaler... Done.")
 
 def distFrom(lat1, lng1, lat2, lng2):
     #Radio de la Tierra en km
@@ -131,3 +203,4 @@ _, ax = plt.subplots(figsize=a4_dims)
 
 chart = sns.barplot(x=stations_crimes_and_trips['id'], y=stations_crimes_and_trips['tripsSum'], hue=stations_crimes_and_trips['hasCrime'], ax=ax)
 chart.set_xticklabels(chart.get_xticklabels(), rotation=45)
+
