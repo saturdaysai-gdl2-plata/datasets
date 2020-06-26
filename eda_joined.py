@@ -16,11 +16,25 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import cross_val_score
 from sklearn.compose import ColumnTransformer
+import base64
+
+
+def create_onedrive_directdownload(onedrive_link):
+    data_bytes64 = base64.b64encode(bytes(onedrive_link, 'utf-8'))
+    data_bytes64_String = data_bytes64.decode('utf-8').replace('/','_').replace('+','-').rstrip("=")
+    resultUrl = f"https://api.onedrive.com/v1.0/shares/u!{data_bytes64_String}/root/content"
+    return resultUrl
+
+
+mibici_dataset_direct_url = create_onedrive_directdownload('https://1drv.ms/u/s!AllbB8dY7-XlonYbKR5K_UxVhb5N?e=2dyg0K')
+estaciones_direct_url = create_onedrive_directdownload('https://1drv.ms/u/s!AllbB8dY7-XlondVkj-i2oSp7X0M?e=fq1fOv')
+neighborhoods_lat_lng_direct_url = create_onedrive_directdownload('https://1drv.ms/u/s!AllbB8dY7-XlonigcNaWfXwaC5dC?e=ggEhzD')
+criminal_incidence_direct_url = create_onedrive_directdownload('https://1drv.ms/u/s!AllbB8dY7-Xlonl9IYCBVwrS6wug?e=8JW4cU')
 
 date_cols = ['Inicio_del_viaje', 'Fin_del_viaje']
 
 df = pd.read_csv(
-    'https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/data.csv',
+    mibici_dataset_direct_url,
     dtype={
         'Anio_de_nacimiento': pd.UInt16Dtype(),
         'Origen_Id': pd.UInt16Dtype(),
@@ -48,7 +62,7 @@ df.drop(df[df.diff_seconds < 15].index, inplace = True)
 # Filtramos los registros para sólo mujeres
 df = df[df["Genero"].isin(["F"])]
 
-estaciones_df = pd.read_csv('https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/estaciones.csv')
+estaciones_df = pd.read_csv(estaciones_direct_url)
 df = df.merge(estaciones_df, left_on='Origen_Id', right_on='id', how= 'left')
 df = df.merge(estaciones_df, left_on='Destino_Id', right_on='id', how= 'left')
 df.drop(['id_x', 'id_y'], inplace = True, axis=1)
@@ -58,7 +72,7 @@ df['mes'] = df['Inicio_del_viaje'].dt.month
 
 # ======== Criminal Incidence ========
 
-df_criminal = pd.read_csv('https://trello-attachments.s3.amazonaws.com/5e7ab7849f172231e1d8b386/5e7d5e0fec43d718240c71c7/cbf8668259455adfbabd3f686e410b41/incidencia_delictiva_jalisco18-19_filter.csv')
+df_criminal = pd.read_csv(criminal_incidence_direct_url)
 
 municipalities = ["GUADALAJARA", "ZAPOPAN", "SAN PEDRO TLAQUEPAQUE"]
 null_values = ["N.D.", "N..D."]
@@ -69,7 +83,7 @@ df_criminal = df_criminal[df_criminal["Municipio"].isin(municipalities)]
 df_criminal = df_criminal[~df_criminal["Colonia"].isin(null_values)]
 df_criminal = df_criminal[df_criminal["Delito"].isin(crimes)]
 
-lat_lng = pd.read_csv("https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/neighborhoods_latlng.csv")
+lat_lng = pd.read_csv(neighborhoods_lat_lng_direct_url)
 lat_lng = lat_lng[~lat_lng["status"].isin(statuses_to_drop)]
 df_criminal = df_criminal.merge(lat_lng, left_on='Colonia', right_on="colonia", how="left")
 df_criminal.drop(['Mes', 'Clave_Mun', 'colonia', 'query', 'status'], axis = 1, inplace=True)
@@ -80,6 +94,7 @@ indexNames = df_criminal[(df_criminal.location_lat < 20.3257581) | (df_criminal.
 df_criminal.drop(indexNames , inplace=True)
 print("Total of rows after deletion: ", len(df_criminal.index))
 print("Deleting invalid coordinates... Done.")
+
 
 def trainModel_scale(model, features, data, nFoldList, nTest, scaler, output):
     for i in nFoldList:
@@ -94,14 +109,14 @@ def trainModel_scale(model, features, data, nFoldList, nTest, scaler, output):
         #])
 
         scaler = Pipeline(steps=[
-            ('sca', scaler) 
+            ('sca', scaler)
         ])
 
 
         preprocessor = ColumnTransformer(
             transformers=[
                 #('cat', categorical_transformer, categorical_cols),
-                ('sca', scaler, features)                    
+                ('sca', scaler, features)
             ])
 
         my_pipeline = Pipeline(steps=[('preprocessor', preprocessor),('model', model)])
@@ -114,7 +129,7 @@ def trainModel_scale(model, features, data, nFoldList, nTest, scaler, output):
                               cv = cv,
                               #scoring='accuracy')
                               scoring='precision')
-        
+
         print("nFold", i)
         print(scores)
         #print("MAE scores: %0.5f(+/- %0.4f)" % (scores.mean(), scores.std()))
@@ -133,8 +148,8 @@ nTest = 3
 #data= df_criminal.copy()
 data = df_criminal[all_rows].dropna()
 convert_dict = {'anio': float, 'mes': float, 'y_lesionesDolosas': float}
-data = data.astype(convert_dict) 
-#data = df_criminal.astype(np.float64) 
+data = data.astype(convert_dict)
+#data = df_criminal.astype(np.float64)
 print("Total of rows: ", len(data.index))
 scaler = MinMaxScaler()
 trainModel_scale(model, features, data, nFoldList, nTest, scaler, output)
