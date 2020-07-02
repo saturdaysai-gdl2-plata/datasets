@@ -176,11 +176,11 @@ data = data.astype(convert_dict)
 
 y_pred = trainAndPredict(model, features, data, scaler, output, categorical_cols, X_test)
 
-X_test.assign(y_homicidioDoloso = y_pred)
+X_test = X_test.assign(y_homicidioDoloso = y_pred)
 del(y_pred)
 
-print('Saving file...')
-X_test.to_csv(r'data.csv', index = False)
-print('Done.')
+#print('Saving file...')
+#X_test.to_csv(r'data.csv', index = False)
+#print('Done.')
 
 print('All finished successfully.')
