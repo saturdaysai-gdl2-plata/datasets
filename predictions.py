@@ -86,7 +86,9 @@ del(df_new)
 criminal_incidence_direct_url = create_onedrive_directdownload('https://1drv.ms/u/s!AllbB8dY7-Xlonl9IYCBVwrS6wug?e=8JW4cU')
 neighborhoods_lat_lng_direct_url = create_onedrive_directdownload('https://1drv.ms/u/s!AllbB8dY7-XlonigcNaWfXwaC5dC?e=ggEhzD')
 
+print('Loading criminal data...')
 df_criminal = pd.read_csv(criminal_incidence_direct_url)
+print('Done.')
 
 municipalities = ["GUADALAJARA", "ZAPOPAN", "SAN PEDRO TLAQUEPAQUE"]
 null_values = ["N.D.", "N..D."]
@@ -161,6 +163,8 @@ def trainAndPredict(model, features, data, scaler, output, categorical_cols, X_t
     return y_pred
 
 output = 'y_homicidioDoloso'
+output_list = []
+output_list.append(output)
 features = ['anio', 'mes', 'location_lat', 'location_lng']
 all_rows = features + output_list
 model = DecisionTreeClassifier()
