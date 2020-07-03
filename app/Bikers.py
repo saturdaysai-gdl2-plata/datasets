@@ -8,18 +8,20 @@ DATA_MODEL = "datos_modelo.csv"
 DATA_PREDICCION = "data.csv"
 
 ALL_CRIMES = -1
+ROBO_CUENTAHABIENTES = 0
+HOMICIDIO_DOLOSO = 1
 
-st.title("Crime Analysis for Bikers")
-st.markdown(
+COLOR_DOT_CSS_FORMAT = """
+    <style>
+        .c{} {{
+            height: 25px;
+            width: 25px;
+            background-color: rgba({});
+            border-radius: 50%;
+            display: inline-block;
+        }}
+    </style>
     """
-    Este proyecto lo hicimos como parte del programa Saturdays.IA, en la sede de Guadalajara, México.
-    Saturdays.AI es una organización sin fines de lucro enfocada en hacer que la
-    Inteligencia Artificial sea de fácil acceso y capacitar a los participantes
-    bajo un esquema colaborativo y basado en proyectos aplicados.
-
-[Ver el codigo aquí](https://github.com/orgs/saturdaysai-gdl2-plata)
-"""
-)
 
 months = {
     1: "Enero",
@@ -38,9 +40,32 @@ months = {
 
 crimes = {
     "Mostrar Todos": ALL_CRIMES,
-    "Robo a cuentahabientes": 0,
-    "Homicidio doloso": 1,
+    "Robo a cuentahabientes": ROBO_CUENTAHABIENTES,
+    "Homicidio doloso": HOMICIDIO_DOLOSO,
 }
+
+crimes_rgba = {
+    ROBO_CUENTAHABIENTES: [255, 10, 110, 240],
+    HOMICIDIO_DOLOSO: [0, 20, 110, 240],
+}
+
+for crime_name, rgba in crimes_rgba.items():
+    st.markdown(
+        COLOR_DOT_CSS_FORMAT.format(crime_name, ",".join(str(x) for x in rgba)),
+        unsafe_allow_html=True,
+    )
+
+st.title("Crime Analysis for Bikers")
+st.markdown(
+    """
+    Este proyecto lo hicimos como parte del programa Saturdays.IA, en la sede de Guadalajara, México.
+    Saturdays.AI es una organización sin fines de lucro enfocada en hacer que la
+    Inteligencia Artificial sea de fácil acceso y capacitar a los participantes
+    bajo un esquema colaborativo y basado en proyectos aplicados.
+
+[Ver el codigo aquí](https://github.com/orgs/saturdaysai-gdl2-plata)
+"""
+)
 
 
 @st.cache(persist=True)
@@ -90,17 +115,27 @@ st.write(
     )
 )
 
-
-if st.checkbox("Ver los datos crudos", False):
-    st.subheader("Actividad de %s" % (months[month]))
-    st.write(data_model)
-
 # Segundo Mapa
 st.subheader("Predicciones")
 data_predict = load_data(DATA_PREDICCION)
 data_predict = data_predict.sample(8000000)
 
 selected_crime = st.selectbox("Selecciona un Crimen", list(crimes.keys()))
+
+# This code's pretty ugly. Basically, it's a hack to display the scatterplot's legend
+legend = (
+    """
+    <div style="text-align:left"><h3>Leyendas</h3>"""
+    + "".join(
+        [
+            '<span class="c{}"></span> {}<br>'.format(crimes[crime_name], crime_name)
+            for crime_name in list(crimes.keys())[1:]
+        ]
+    )
+    + """</div>
+    """
+)
+st.markdown(legend, unsafe_allow_html=True)
 
 if crimes[selected_crime] != ALL_CRIMES:
     data_predict = data_predict[
@@ -145,7 +180,3 @@ st.write(
         ],
     )
 )
-
-if st.checkbox("Ver los datos crudoss", False):
-    st.subheader("Actividad de %s" % (months[month]))
-    st.write(data_predict)
