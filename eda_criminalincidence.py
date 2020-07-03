@@ -8,6 +8,20 @@ Original file is located at
 
 ## Downloading dataset
 """
+""" EDA for criminal incidence dataset
+
+This script allows to put in a csv file the longitude and latitude
+for a neighborhood center point, by doing a query with the neighborhood's 
+name with the Google Maps API.
+
+This script requires that `pandas` be installed within the Python
+environment you are running this script in. Also an API KEY for Google Maps is needed.
+
+This file contains the following functions:
+
+    * get_lat_lng_from_google_maps_api - returns the longitude and latide in the center for an area
+    * _populate_results_dict - this function populate a dictionary wuth the info downloaded from Google Maps
+"""
 
 import pandas as pd
 
@@ -21,6 +35,24 @@ df = df[~df["Colonia"].isin(null_values)]
 
 
 def get_lat_lng_from_google_maps_api(neighborhoods):
+
+    """Gets and puts in a csv file the longitude and latitude
+       for a neighborhood center point, by doing a query with the neighborhood's 
+       name with the Google Maps API
+
+    Parameters
+    ----------
+    neighborhoods : list<str>
+        An string list with the neighborhood's names
+    
+
+    Returns
+    -------
+    void :
+        the file neighborhoods_latlng.csv
+    """
+
+
     !pip install -U googlemaps
 
     from googlemaps import Client as GoogleMaps
@@ -105,6 +137,36 @@ def get_lat_lng_from_google_maps_api(neighborhoods):
             geometry_sw_lat=None,
             geometry_sw_lng=None
         ):
+
+        """Gets the geospatial information for a neighborhood
+
+            Parameters
+            ----------
+            neighborhood: str
+                The neighborhood's name
+            query: str
+                The neighborhood's name cleaned
+            status: str
+                The status query
+            location_lat: str
+                The neighborhood's latitude
+            location_lng: str
+                The neighborhood's longitude
+            geometry_ne_lat: str
+                The north east latitude
+            geometry_ne_lng: str
+                The north east longitude
+            geometry_sw_lat: str
+                The south weast latitude
+            geometry_sw_lng: str
+                The north east latitude
+
+            Returns
+            -------
+            void
+                populates res dictionary
+        """
+
             if location_lat is not None:
                 location_lat = location_lat
 

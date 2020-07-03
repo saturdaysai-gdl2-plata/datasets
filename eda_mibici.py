@@ -8,6 +8,22 @@ Original file is located at
 
 ## Downloading dataset and making basic preparations to handle data
 """
+""" EDA for MIBICI dataset
+
+This script allows to explore and clean MIBICI dataset, and save the results in AWS a csv file.
+Read process: 
+    read a file from AWS
+    https://saturdays-ai-gdl2-plata-mibici.s3-us-west-2.amazonaws.com/data.csv
+
+Clean process:
+    Delete duplicated rows
+    Delete Nan-value rows
+    Delete the rows with a value less than 15 in the diff_seconds column
+
+This file contains the following function:
+
+    * upload_to_s3 - save or refresh the csv file
+"""
 
 import pandas as pd
 

@@ -1,3 +1,23 @@
+""" EDA for Join of atasets
+
+This script allows to read, clean, analize and join MIBICI and criminalincidence datasets,
+and show the result of analysis in a histogram. Also, the script does a training model.
+
+Read process: 
+    read the files to start the process
+
+Clean process:
+    Delete duplicated rows
+    Delete Nan-value rows
+    Delete the rows with a value less than 15 in the diff_seconds column
+
+Join files:
+
+This file contains the following function:
+    * create_onedrive_directdownload
+    * distFrom
+"""
+
 import pandas as pd
 import numpy as np
 import base64
@@ -71,6 +91,22 @@ df_criminal.drop(['Mes', 'Clave_Mun', 'colonia', 'query', 'status'], axis = 1, i
 
 
 def distFrom(lat1, lng1, lat2, lng2):
+    """Returns the haversine distance between two points
+        Parameters
+        ----------
+            lat1: double
+                Point 1 latitude 
+            lng1: double
+                Point 1 longitude
+            lat2: double
+                Point 2 latitude 
+            lng2: double
+                Point 2 longitude
+        Returns
+        -------
+            R * c: double
+                the haversine distance
+    """
     #Radio de la Tierra en km
     R = 6373.0
 
