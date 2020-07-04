@@ -27,3 +27,7 @@ Utilizando datos abiertos del sistema MiBici + datos de la incidencia delictiva 
 Los Jupyter notebooks que se pueden encontrar dentro de las carpetas en la raíz del proyecto indican cómo acceder a los datos utilizados.
 
 Las coordenadas de las estaciones de MiBici pueden ser obtenidas a través de [esta petición](https://bikeshare-research.org/api/v1/categories/stations/fields/stnid,lat,lng/systems/guadalajara).
+
+## Contacto
+
+En dado caso que detectes algún problema en nuestro repositorio, no dudes en abrir un [issue](https://github.com/saturdaysai-gdl2-plata/datasets/issues) para atenderlo.
