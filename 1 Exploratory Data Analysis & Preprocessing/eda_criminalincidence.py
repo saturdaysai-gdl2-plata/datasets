@@ -11,7 +11,7 @@ Original file is located at
 """ EDA for criminal incidence dataset
 
 This script allows to put in a csv file the longitude and latitude
-for a neighborhood center point, by doing a query with the neighborhood's 
+for a neighborhood center point, by doing a query with the neighborhood's
 name with the Google Maps API.
 
 This script requires that `pandas` be installed within the Python
@@ -25,7 +25,9 @@ This file contains the following functions:
 
 import pandas as pd
 
-df = pd.read_csv('https://trello-attachments.s3.amazonaws.com/5e7ab7849f172231e1d8b386/5e7d5e0fec43d718240c71c7/cbf8668259455adfbabd3f686e410b41/incidencia_delictiva_jalisco18-19_filter.csv')
+df = pd.read_csv(
+    "https://trello-attachments.s3.amazonaws.com/5e7ab7849f172231e1d8b386/5e7d5e0fec43d718240c71c7/cbf8668259455adfbabd3f686e410b41/incidencia_delictiva_jalisco18-19_filter.csv"
+)
 
 municipalities = ["GUADALAJARA", "ZAPOPAN", "SAN PEDRO TLAQUEPAQUE"]
 null_values = ["N.D.", "N..D."]
@@ -37,21 +39,20 @@ df = df[~df["Colonia"].isin(null_values)]
 def get_lat_lng_from_google_maps_api(neighborhoods):
 
     """Gets and puts in a csv file the longitude and latitude
-       for a neighborhood center point, by doing a query with the neighborhood's 
+       for a neighborhood center point, by doing a query with the neighborhood's
        name with the Google Maps API
 
     Parameters
     ----------
     neighborhoods : list<str>
         An string list with the neighborhood's names
-    
+
 
     Returns
     -------
     void :
         the file neighborhoods_latlng.csv
     """
-
 
     !pip install -U googlemaps
 
@@ -77,7 +78,7 @@ def get_lat_lng_from_google_maps_api(neighborhoods):
         "harbioledas": "harboledas",
         "rndas.": "residencias",
         "rnda.": "residencia",
-        "hards.": "jardines"
+        "hards.": "jardines",
     }
 
     NEIGHBORHOOD_KEY = "colonia"
@@ -102,16 +103,18 @@ def get_lat_lng_from_google_maps_api(neighborhoods):
         STATUS_KEY: [],
     }
 
-    gmaps = GoogleMaps('APIKEY')
+    gmaps = GoogleMaps("APIKEY")
 
     for neighborhood in neighborhoods:
         neighborhood_low = neighborhood.lower()
         neighborhood_to_search = neighborhood_low
 
-        if '.' in neighborhood_low:
+        if "." in neighborhood_low:
             for token in neighborhood_low.split():
                 if token in abbr_extensions:
-                    neighborhood_to_search = neighborhood_low.replace(token, abbr_extensions[token])
+                    neighborhood_to_search = neighborhood_low.replace(
+                        token, abbr_extensions[token]
+                    )
                     break
 
         query = neighborhood_to_search
@@ -119,12 +122,12 @@ def get_lat_lng_from_google_maps_api(neighborhoods):
         # The following bounds correspond to the Guadalajara Metropolitan Area, which were recovered from this request:
         # https://maps.googleapis.com/maps/api/geocode/json?address=zona+metropolitana+guadalajara&key=APIKEY
         results = gmaps.geocode(
-                query,
-                bounds={
-                    "southwest": (20.3257581, -103.6650327),
-                    "northeast": (20.9982375, -103.0809884),
-                },
-            )
+            query,
+            bounds={
+                "southwest": (20.3257581, -103.6650327),
+                "northeast": (20.9982375, -103.0809884),
+            },
+        )
 
         def _populate_results_dict(
             neighborhood,
@@ -135,37 +138,36 @@ def get_lat_lng_from_google_maps_api(neighborhoods):
             geometry_ne_lat=None,
             geometry_ne_lng=None,
             geometry_sw_lat=None,
-            geometry_sw_lng=None
+            geometry_sw_lng=None,
         ):
+            """Gets the geospatial information for a neighborhood
 
-        """Gets the geospatial information for a neighborhood
+                Parameters
+                ----------
+                neighborhood: str
+                    The neighborhood's name
+                query: str
+                    The neighborhood's name cleaned
+                status: str
+                    The status query
+                location_lat: str
+                    The neighborhood's latitude
+                location_lng: str
+                    The neighborhood's longitude
+                geometry_ne_lat: str
+                    The north east latitude
+                geometry_ne_lng: str
+                    The north east longitude
+                geometry_sw_lat: str
+                    The south weast latitude
+                geometry_sw_lng: str
+                    The north east latitude
 
-            Parameters
-            ----------
-            neighborhood: str
-                The neighborhood's name
-            query: str
-                The neighborhood's name cleaned
-            status: str
-                The status query
-            location_lat: str
-                The neighborhood's latitude
-            location_lng: str
-                The neighborhood's longitude
-            geometry_ne_lat: str
-                The north east latitude
-            geometry_ne_lng: str
-                The north east longitude
-            geometry_sw_lat: str
-                The south weast latitude
-            geometry_sw_lng: str
-                The north east latitude
-
-            Returns
-            -------
-            void
-                populates res dictionary
-        """
+                Returns
+                -------
+                void
+                    populates res dictionary
+            """
 
             if location_lat is not None:
                 location_lat = location_lat
@@ -207,18 +209,18 @@ def get_lat_lng_from_google_maps_api(neighborhoods):
         # "Bounds" is the preferred way to get coordinates as they tend to be more precise,
         # if they're not present, "viewport" will be used.
         try:
-            geometry_ne_lat = results[0]['geometry']['bounds']['northeast']['lat']
-            geometry_ne_lng = results[0]['geometry']['bounds']['northeast']['lng']
-            geometry_sw_lat = results[0]['geometry']['bounds']['southwest']['lat']
-            geometry_sw_lng = results[0]['geometry']['bounds']['southwest']['lng']
+            geometry_ne_lat = results[0]["geometry"]["bounds"]["northeast"]["lat"]
+            geometry_ne_lng = results[0]["geometry"]["bounds"]["northeast"]["lng"]
+            geometry_sw_lat = results[0]["geometry"]["bounds"]["southwest"]["lat"]
+            geometry_sw_lng = results[0]["geometry"]["bounds"]["southwest"]["lng"]
         except KeyError:
-            geometry_ne_lat = results[0]['geometry']['viewport']['northeast']['lat']
-            geometry_ne_lng = results[0]['geometry']['viewport']['northeast']['lng']
-            geometry_sw_lat = results[0]['geometry']['viewport']['southwest']['lat']
-            geometry_sw_lng = results[0]['geometry']['viewport']['southwest']['lng']
+            geometry_ne_lat = results[0]["geometry"]["viewport"]["northeast"]["lat"]
+            geometry_ne_lng = results[0]["geometry"]["viewport"]["northeast"]["lng"]
+            geometry_sw_lat = results[0]["geometry"]["viewport"]["southwest"]["lat"]
+            geometry_sw_lng = results[0]["geometry"]["viewport"]["southwest"]["lng"]
 
-        location_lat = results[0]['geometry']['location']['lat']
-        location_lng = results[0]['geometry']['location']['lng']
+        location_lat = results[0]["geometry"]["location"]["lat"]
+        location_lng = results[0]["geometry"]["location"]["lng"]
 
         _populate_results_dict(
             neighborhood,
@@ -229,10 +231,11 @@ def get_lat_lng_from_google_maps_api(neighborhoods):
             geometry_ne_lat,
             geometry_ne_lng,
             geometry_sw_lat,
-            geometry_sw_lng
+            geometry_sw_lng,
         )
 
     df_latlng = pd.DataFrame(data=res)
     df_latlng.to_csv("neighborhoods_latlng.csv", index=False)
+
 
 # get_lat_lng_from_google_maps_api(df["Colonia"].unique())
