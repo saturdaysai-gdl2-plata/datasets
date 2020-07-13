@@ -16,7 +16,7 @@ Proyecto realizado durante la segunda edición de [Saturdays.AI](https://www.sat
 El proceso y la experiencia han sido documentadas en Medium:
 
 - [Parte 1](https://medium.com/saturdays-ai/machine-learning-y-zonas-seguras-para-ciclistas-parte-1-5b5737402bb9)
-- Parte 2 (¡próximamente!)
+- [Parte 2](https://medium.com/saturdays-ai/machine-learning-y-zonas-seguras-para-ciclistas-parte-2-c79a2801a92f)
 
 ## Descripción
 
